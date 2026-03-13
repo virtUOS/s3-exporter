@@ -103,7 +103,6 @@ func (c *S3Collector) Collect(ch chan<- prometheus.Metric) {
 }
 
 func main() {
-
 	accessKey := os.Getenv("AWS_S3_ACCESS_KEY_ID")
 	secretKey := os.Getenv("AWS_S3_SECRET_ACCESS_KEY")
 	region := os.Getenv("AWS_S3_REGION")
@@ -138,6 +137,6 @@ func main() {
 
 	http.Handle("/s3-metrics", promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
 
-	log.Printf("Starting S3 exporter on 0.0.0.0:%s/metrics targeting %s", port, endpoint)
+	log.Printf("Starting S3 exporter on 0.0.0.0:%s/s3-metrics targeting %s", port, endpoint)
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+port, nil))
 }
