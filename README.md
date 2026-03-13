@@ -15,11 +15,11 @@ This exporter automatically discovers all buckets your credentials have access t
 
 Metrics are exposed on the `/s3-metrics` endpoint. Every metric includes a bucket label with the name of the S3 bucket.
 
-| Metric Name | Type | Description |
-|---|---|---|
-| s3_bucket_objects_total | Gauge | Total number of objects currently in the bucket. |
-| s3_bucket_size_bytes | Gauge | Total combined size of all objects in the bucket. |
-| s3_bucket_last_modified_timestamp_seconds | Gauge | Unix timestamp of the most recently modified object. |
+| Metric Name                               | Type  | Description
+|-------------------------------------------|-------|-----------------------------------------------------
+| s3_bucket_objects_total                   | Gauge | Total number of objects currently in the bucket.
+| s3_bucket_size_bytes                      | Gauge | Total combined size of all objects in the bucket.
+| s3_bucket_last_modified_timestamp_seconds | Gauge | Unix timestamp of the most recently modified object.
 
 An example output looks like this:
 
@@ -48,13 +48,13 @@ s3_bucket_size_bytes{bucket="mybucket-4"} 0
 
 The exporter is configured via environment variables. There are no default fallbacks for AWS credentials. If a required variable is missing, the application will crash immediately on startup.
 
-| Environment Variable      | Required | Default | Description                                           |
-|---------------------------|----------|---------|-------------------------------------------------------|
-| AWS_S3_ACCESS_KEY_ID      | ✅ Yes   | -       | Your S3 Access Key.                                   |
-| AWS_S3_SECRET_ACCESS_KEY  | ✅ Yes   | -       | Your S3 Secret Key.                                   |
-| AWS_S3_REGION             | ✅ Yes   | -       | The S3 region (e.g., us-east-1, or your custom region). |
-| AWS_S3_ENDPOINT_URL       | ✅ Yes   | -       | Full URL to your self-hosted S3 cluster (e.g., http://s3.internal:9000). |
-| METRICS_PORT              | ❌ No    | 9300    | The port the HTTP server binds to.                    |
+| Environment Variable      | Required | Default | Description
+|---------------------------|----------|---------|-------------------------------------------------------
+| AWS_S3_ACCESS_KEY_ID      | ✅ Yes   | -       | Your S3 Access Key.
+| AWS_S3_SECRET_ACCESS_KEY  | ✅ Yes   | -       | Your S3 Secret Key.
+| AWS_S3_REGION             | ✅ Yes   | -       | The S3 region (e.g., us-east-1, or your custom region).
+| AWS_S3_ENDPOINT_URL       | ✅ Yes   | -       | Full URL to your S3 cluster (e.g., http://s3.internal:9000).
+| METRICS_PORT              | ❌ No    | 9300    | The port the HTTP server binds to.
 
 ## 🚀 Usage
 
@@ -142,7 +142,7 @@ groups:
       # useful to monitor backups into S3
       # ==========================================
       - alert: S3BucketStale
-        # time() gets current Unix timestamp. 
+        # time() gets current Unix timestamp.
         # 3 days = 3 * 24 hours * 3600 seconds
         expr: (time() - s3_bucket_last_modified_timestamp_seconds) > (3 * 24 * 3600)
         for: 5m
@@ -151,7 +151,7 @@ groups:
         annotations:
           summary: "S3 Bucket '{{ $labels.bucket }}' is stale"
           description: >
-            No objects have been uploaded or modified in the bucket '{{ $labels.bucket }}' 
+            No objects have been uploaded or modified in the bucket '{{ $labels.bucket }}'
             for over 3 days. Check if the upstream backup/upload jobs are failing.
 
       # ==========================================
@@ -166,7 +166,7 @@ groups:
         annotations:
           summary: "S3 Bucket '{{ $labels.bucket }}' exceeded 100 GB"
           description: >
-            The S3 bucket '{{ $labels.bucket }}' has exceeded the 100 GB threshold. 
+            The S3 bucket '{{ $labels.bucket }}' has exceeded the 100 GB threshold.
             Current size is {{ $value | humanize1024 }}.
 ```
 
