@@ -48,13 +48,13 @@ s3_bucket_size_bytes{bucket="mybucket-4"} 0
 
 The exporter is configured via environment variables. There are no default fallbacks for AWS credentials. If a required variable is missing, the application will crash immediately on startup.
 
-| Environment Variable | Required | Default	Description |
-|---|---|---|
-| AWS_ACCESS_KEY_ID | ✅ Yes | - | Your S3 Access Key. |
-| AWS_SECRET_ACCESS_KEY | ✅ Yes | - | Your S3 Secret Key. |
-| AWS_REGION | ✅ Yes | - | The S3 region (e.g., us-east-1, or your custom region). |
-| S3_ENDPOINT | ✅ Yes | - | Full URL to your self-hosted S3 cluster (e.g., http://s3.internal:9000). |
-| METRICS_PORT | ❌ No | 9300 | The port the HTTP server binds to. |
+| Environment Variable      | Required | Default | Description                                           |
+|---------------------------|----------|---------|-------------------------------------------------------|
+| AWS_S3_ACCESS_KEY_ID      | ✅ Yes   | -       | Your S3 Access Key.                                   |
+| AWS_S3_SECRET_ACCESS_KEY  | ✅ Yes   | -       | Your S3 Secret Key.                                   |
+| AWS_S3_REGION             | ✅ Yes   | -       | The S3 region (e.g., us-east-1, or your custom region). |
+| AWS_S3_ENDPOINT_URL       | ✅ Yes   | -       | Full URL to your self-hosted S3 cluster (e.g., http://s3.internal:9000). |
+| METRICS_PORT              | ❌ No    | 9300    | The port the HTTP server binds to.                    |
 
 ## 🚀 Usage
 
@@ -72,10 +72,10 @@ Run the container:
 docker run \
   --name s3-exporter \
   -p 9300:9300 \
-  -e AWS_ACCESS_KEY_ID="your-access-key" \
-  -e AWS_SECRET_ACCESS_KEY="your-secret-key" \
-  -e AWS_REGION="us-east-1" \
-  -e S3_ENDPOINT="http://your-s3-cluster:9000" \
+  -e AWS_S3_ACCESS_KEY_ID="your-access-key" \
+  -e AWS_S3_SECRET_ACCESS_KEY="your-secret-key" \
+  -e AWS_S3_REGION="us-east-1" \
+  -e AWS_S3_ENDPOINT_URL="http://your-s3-cluster:9000" \
   s3-exporter:latest
 ```
 
@@ -98,10 +98,10 @@ services:
 Ensure you have Go 1.21+ installed, then run:
 
 ```bash
-export AWS_ACCESS_KEY_ID="your-access-key"
-export AWS_SECRET_ACCESS_KEY="your-secret-key"
-export AWS_REGION="us-east-1"
-export S3_ENDPOINT="http://localhost:9000"
+export AWS_S3_ACCESS_KEY_ID="your-access-key"
+export AWS_S3_SECRET_ACCESS_KEY="your-secret-key"
+export AWS_S3_REGION="us-east-1"
+export AWS_S3_ENDPOINT_URL="http://localhost:9000"
 
 go mod tidy
 go run main.go
