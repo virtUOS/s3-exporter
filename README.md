@@ -23,7 +23,7 @@ Metrics are exposed on the `/s3-metrics` endpoint. Every metric includes a bucke
 
 An example output looks like this:
 
-```
+```sh
 # HELP s3_bucket_last_modified_timestamp_seconds Timestamp of the most recently modified object
 # TYPE s3_bucket_last_modified_timestamp_seconds gauge
 s3_bucket_last_modified_timestamp_seconds{bucket="mybucket-1"} 1.772715739e+09
