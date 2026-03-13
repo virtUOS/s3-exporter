@@ -53,7 +53,7 @@ The exporter is configured via environment variables. There are no default fallb
 | AWS_S3_ACCESS_KEY_ID      | ✅ Yes   | -       | Your S3 Access Key.
 | AWS_S3_SECRET_ACCESS_KEY  | ✅ Yes   | -       | Your S3 Secret Key.
 | AWS_S3_REGION             | ✅ Yes   | -       | The S3 region (e.g., us-east-1, or your custom region).
-| AWS_S3_ENDPOINT_URL       | ✅ Yes   | -       | Full URL to your S3 cluster (e.g., http://s3.internal:9000).
+| AWS_S3_ENDPOINT_URL       | ✅ Yes   | -       | Full URL to your S3 cluster (e.g., <http://s3.internal:9000>).
 | METRICS_PORT              | ❌ No    | 9300    | The port the HTTP server binds to.
 
 ## 🚀 Usage
@@ -79,7 +79,7 @@ docker run \
   s3-exporter:latest
 ```
 
-Or in compose:
+Or use a compose file with an accompanying [.env](.env.example) file:
 
 ```yaml
 services:
@@ -116,7 +116,6 @@ curl http://localhost:9300/s3-metrics
 ## 🔗 Prometheus Scrape Configuration
 
 Add the following scrape job to your `prometheus.yml`:
-
 
 ```yaml
 scrape_configs:
