@@ -118,6 +118,11 @@ func main() {
 		port = "9300"
 	}
 
+	address := os.Getenv("METRICS_ADDRESS")
+	if address == "" {
+		address = "127.0.0.1"
+	}
+
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithRegion(region),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKey, secretKey, "")),
@@ -137,6 +142,6 @@ func main() {
 
 	http.Handle("/s3-metrics", promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
 
-	log.Printf("Starting S3 exporter on 0.0.0.0:%s/s3-metrics targeting %s", port, endpoint)
-	log.Fatal(http.ListenAndServe("0.0.0.0:"+port, nil))
+	log.Printf("Starting S3 exporter on %s:%s/s3-metrics targeting %s", address, port, endpoint)
+	log.Fatal(http.ListenAndServe(address+":"+port, nil))
 }

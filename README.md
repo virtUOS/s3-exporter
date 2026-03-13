@@ -48,13 +48,14 @@ s3_bucket_size_bytes{bucket="mybucket-4"} 0
 
 The exporter is configured via environment variables. There are no default fallbacks for AWS credentials. If a required variable is missing, the application will crash immediately on startup.
 
-| Environment Variable      | Required | Default | Description
-|---------------------------|----------|---------|-------------------------------------------------------
-| AWS_S3_ACCESS_KEY_ID      | ✅ Yes   | -       | Your S3 Access Key.
-| AWS_S3_SECRET_ACCESS_KEY  | ✅ Yes   | -       | Your S3 Secret Key.
-| AWS_S3_REGION             | ✅ Yes   | -       | The S3 region (e.g., us-east-1, or your custom region).
-| AWS_S3_ENDPOINT_URL       | ✅ Yes   | -       | Full URL to your S3 cluster (e.g., http://s3.internal:9000).
-| METRICS_PORT              | ❌ No    | 9300    | The port the HTTP server binds to.
+| Environment Variable      | Required | Default   | Description
+|---------------------------|----------|-----------|-------------------------------------------------------
+| AWS_S3_ACCESS_KEY_ID      | ✅ Yes   | -         | Your S3 Access Key.
+| AWS_S3_SECRET_ACCESS_KEY  | ✅ Yes   | -         | Your S3 Secret Key.
+| AWS_S3_REGION             | ✅ Yes   | -         | The S3 region (e.g., us-east-1, or your custom region).
+| AWS_S3_ENDPOINT_URL       | ✅ Yes   | -         | Full URL to your S3 cluster (e.g., http://s3.internal:9000).
+| METRICS_PORT              | ❌ No    | 9300      | The port the HTTP server binds to.
+| METRICS_ADDRESS           | ❌ No    | 127.0.0.1 | The address the HTTP server binds to.
 
 ## 🚀 Usage
 
@@ -76,6 +77,7 @@ docker run \
   -e AWS_S3_SECRET_ACCESS_KEY="your-secret-key" \
   -e AWS_S3_REGION="us-east-1" \
   -e AWS_S3_ENDPOINT_URL="http://your-s3-cluster:9000" \
+  -e METRICS_ADDRESS="0.0.0.0" \
   s3-exporter:latest
 ```
 
