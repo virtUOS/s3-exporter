@@ -95,7 +95,7 @@ func (c *S3Collector) Collect(ch chan<- prometheus.Metric) {
 		// 3. Publish metrics for this bucket
 		ch <- prometheus.MustNewConstMetric(c.objectCount, prometheus.GaugeValue, count, bucketName)
 		ch <- prometheus.MustNewConstMetric(c.totalSize, prometheus.GaugeValue, sizeBytes, bucketName)
-		
+
 		if latestTime > 0 {
 			ch <- prometheus.MustNewConstMetric(c.lastModified, prometheus.GaugeValue, float64(latestTime), bucketName)
 		}
@@ -113,7 +113,7 @@ func main() {
 		log.Fatal("CRITICAL: Missing required environment variables. " +
 			"You must provide AWS_S3_ACCESS_KEY_ID, AWS_S3_SECRET_ACCESS_KEY, AWS_S3_REGION, and AWS_S3_ENDPOINT_URL.")
 	}
-	
+
 	port := os.Getenv("METRICS_PORT")
 	if port == "" {
 		port = "9300"
