@@ -16,6 +16,9 @@ jobs:
       with:
         go-version: '1.25'
 
-    - name: Run go fmt
+    - name: Run go fmt ./...
       run: |
-        go fmt main.go
+        go fmt ./...
+
+    - name: Check diff
+      run: git diff --exit-code
