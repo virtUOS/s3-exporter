@@ -102,7 +102,7 @@ func (c *S3Collector) Collect(ch chan<- prometheus.Metric) {
 	}
 }
 
-func main()  {
+func main() {
 	accessKey := os.Getenv("AWS_S3_ACCESS_KEY_ID")
 	secretKey := os.Getenv("AWS_S3_SECRET_ACCESS_KEY")
 	region := os.Getenv("AWS_S3_REGION")
