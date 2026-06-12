@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
@@ -13,6 +14,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
+
+// scrapeTimeout bounds a single Collect call (one Prometheus scrape). Keep it
+// below your Prometheus scrape_timeout so a stuck backend fails the scrape
+// rather than blocking the collector.
+const scrapeTimeout = 30 * time.Second
 
 type S3Collector struct {
 	client *s3.Client
@@ -50,7 +56,11 @@ func (c *S3Collector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (c *S3Collector) Collect(ch chan<- prometheus.Metric) {
-	ctx := context.TODO()
+	// Bound the whole scrape so a slow or hung S3 backend can't block the
+	// collector goroutine indefinitely (overlapping scrapes would otherwise
+	// pile up additional full enumerations).
+	ctx, cancel := context.WithTimeout(context.Background(), scrapeTimeout)
+	defer cancel()
 
 	// 1. Auto-discover all buckets we have access to
 	bucketsOutput, err := c.client.ListBuckets(ctx, &s3.ListBucketsInput{})
@@ -72,11 +82,13 @@ func (c *S3Collector) Collect(ch chan<- prometheus.Metric) {
 			Bucket: aws.String(bucketName),
 		})
 
+		failed := false
 		for paginator.HasMorePages() {
 			page, err := paginator.NextPage(ctx)
 			if err != nil {
 				log.Printf("Error listing objects for bucket %s: %v", bucketName, err)
-				break // skip to the next bucket on error
+				failed = true
+				break // stop reading this bucket on error
 			}
 
 			for _, obj := range page.Contents {
@@ -90,6 +102,13 @@ func (c *S3Collector) Collect(ch chan<- prometheus.Metric) {
 					}
 				}
 			}
+		}
+
+		// Don't publish partial results: a mid-pagination failure would
+		// otherwise report an undercounted total as if it were authoritative.
+		// Skipping leaves a gap, which is the correct signal for a failed scrape.
+		if failed {
+			continue
 		}
 
 		// 3. Publish metrics for this bucket
