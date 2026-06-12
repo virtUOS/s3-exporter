@@ -31,6 +31,10 @@ COPY --from=builder /src/s3-exporter /s3-exporter
 # Run as the unprivileged user
 USER s3exporter:s3exporter
 
+# Bind to all interfaces by default so published ports (-p) are reachable.
+# The binary defaults to 127.0.0.1, which would only be reachable inside the container.
+ENV METRICS_ADDRESS=0.0.0.0
+
 # Default port for Prometheus to scrape
 EXPOSE 9300
 

@@ -78,7 +78,6 @@ docker run \
   -e AWS_S3_SECRET_ACCESS_KEY="your-secret-key" \
   -e AWS_S3_REGION="us-east-1" \
   -e AWS_S3_ENDPOINT_URL="http://your-s3-cluster:9000" \
-  -e METRICS_ADDRESS="0.0.0.0" \
   s3-exporter:latest
 ```
 
