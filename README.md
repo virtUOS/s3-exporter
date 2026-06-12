@@ -55,6 +55,7 @@ The exporter is configured via environment variables. There are no default fallb
 | AWS_S3_REGION             | ✅ Yes   | -       | The S3 region (e.g., us-east-1, or your custom region).
 | AWS_S3_ENDPOINT_URL       | ✅ Yes   | -       | Full URL to your S3 cluster (e.g., <http://s3.internal:9000>).
 | METRICS_PORT              | ❌ No    | 9300    | The port the HTTP server binds to.
+| METRICS_PATH              | ❌ No    | /s3-metrics | HTTP path the metrics handler is registered on.
 
 ## 🚀 Usage
 

@@ -118,6 +118,13 @@ func main() {
 		port = "9300"
 	}
 
+	path := os.Getenv("METRICS_PATH")
+	if path == "" {
+		path = "/s3-metrics"
+	} else if path[0] != '/' {
+		path = "/" + path
+	}
+
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithRegion(region),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(accessKey, secretKey, "")),
@@ -135,8 +142,8 @@ func main() {
 	collector := NewS3Collector(s3Client)
 	registry.MustRegister(collector)
 
-	http.Handle("/s3-metrics", promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
+	http.Handle(path, promhttp.HandlerFor(registry, promhttp.HandlerOpts{}))
 
-	log.Printf("Starting S3 exporter on 0.0.0.0:%s/s3-metrics targeting %s", port, endpoint)
+	log.Printf("Starting S3 exporter on 0.0.0.0:%s%s targeting %s", port, path, endpoint)
 	log.Fatal(http.ListenAndServe("0.0.0.0:"+port, nil))
 }
