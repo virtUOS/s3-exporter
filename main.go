@@ -26,8 +26,15 @@ const scrapeTimeout = 30 * time.Second
 // serializing the rest while bounding the load placed on the S3 backend.
 const maxConcurrentBuckets = 8
 
+// S3API is the subset of the S3 client the collector depends on. Depending on
+// an interface (rather than *s3.Client) lets tests inject a fake.
+type S3API interface {
+	ListBuckets(ctx context.Context, params *s3.ListBucketsInput, optFns ...func(*s3.Options)) (*s3.ListBucketsOutput, error)
+	ListObjectsV2(ctx context.Context, params *s3.ListObjectsV2Input, optFns ...func(*s3.Options)) (*s3.ListObjectsV2Output, error)
+}
+
 type S3Collector struct {
-	client *s3.Client
+	client S3API
 
 	objectCount   *prometheus.Desc
 	totalSize     *prometheus.Desc
@@ -36,7 +43,7 @@ type S3Collector struct {
 	bucketSuccess *prometheus.Desc
 }
 
-func NewS3Collector(client *s3.Client) *S3Collector {
+func NewS3Collector(client S3API) *S3Collector {
 	return &S3Collector{
 		client: client,
 		objectCount: prometheus.NewDesc(
