@@ -13,13 +13,15 @@ This exporter automatically discovers all buckets your credentials have access t
 
 ## 📊 Exposed Metrics
 
-Metrics are exposed on the `/s3-metrics` endpoint. Every metric includes a bucket label with the name of the S3 bucket.
+Metrics are exposed on the `/s3-metrics` endpoint. The per-bucket metrics include a bucket label with the name of the S3 bucket.
 
 | Metric Name                               | Type  | Description
 |-------------------------------------------|-------|-----------------------------------------------------
 | s3_bucket_objects_total                   | Gauge | Total number of objects currently in the bucket.
 | s3_bucket_size_bytes                      | Gauge | Total combined size of all objects in the bucket.
 | s3_bucket_last_modified_timestamp_seconds | Gauge | Unix timestamp of the most recently modified object.
+| s3_bucket_scrape_success                  | Gauge | Whether the scrape fully enumerated this bucket (1) or failed (0). On failure the bucket's other metrics are omitted.
+| s3_exporter_scrape_success                | Gauge | Whether the scrape successfully listed buckets (1) or failed (0). No bucket label.
 
 An example output looks like this:
 

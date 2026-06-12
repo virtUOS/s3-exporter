@@ -29,9 +29,11 @@ const maxConcurrentBuckets = 8
 type S3Collector struct {
 	client *s3.Client
 
-	objectCount  *prometheus.Desc
-	totalSize    *prometheus.Desc
-	lastModified *prometheus.Desc
+	objectCount   *prometheus.Desc
+	totalSize     *prometheus.Desc
+	lastModified  *prometheus.Desc
+	scrapeSuccess *prometheus.Desc
+	bucketSuccess *prometheus.Desc
 }
 
 func NewS3Collector(client *s3.Client) *S3Collector {
@@ -52,6 +54,16 @@ func NewS3Collector(client *s3.Client) *S3Collector {
 			"Timestamp of the most recently modified object",
 			[]string{"bucket"}, nil,
 		),
+		scrapeSuccess: prometheus.NewDesc(
+			"s3_exporter_scrape_success",
+			"Whether the most recent scrape successfully listed buckets (1) or failed (0)",
+			nil, nil,
+		),
+		bucketSuccess: prometheus.NewDesc(
+			"s3_bucket_scrape_success",
+			"Whether the most recent scrape fully enumerated this bucket (1) or failed (0)",
+			[]string{"bucket"}, nil,
+		),
 	}
 }
 
@@ -59,6 +71,8 @@ func (c *S3Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.objectCount
 	ch <- c.totalSize
 	ch <- c.lastModified
+	ch <- c.scrapeSuccess
+	ch <- c.bucketSuccess
 }
 
 func (c *S3Collector) Collect(ch chan<- prometheus.Metric) {
@@ -72,8 +86,11 @@ func (c *S3Collector) Collect(ch chan<- prometheus.Metric) {
 	bucketsOutput, err := c.client.ListBuckets(ctx, &s3.ListBucketsInput{})
 	if err != nil {
 		log.Printf("Error listing buckets: %v", err)
+		// Expose the failure so it can be alerted on, not just logged.
+		ch <- prometheus.MustNewConstMetric(c.scrapeSuccess, prometheus.GaugeValue, 0)
 		return
 	}
+	ch <- prometheus.MustNewConstMetric(c.scrapeSuccess, prometheus.GaugeValue, 1)
 
 	// 2. Enumerate buckets concurrently with bounded parallelism so a single
 	// large bucket doesn't serialize the whole scrape. Writing metrics to ch
@@ -111,7 +128,10 @@ func (c *S3Collector) collectBucket(ctx context.Context, ch chan<- prometheus.Me
 		page, err := paginator.NextPage(ctx)
 		if err != nil {
 			log.Printf("Error listing objects for bucket %s: %v", bucketName, err)
-			return // skip this bucket; don't publish a partial total
+			// Don't publish a partial total. Emit success=0 so the failed
+			// bucket is visible (an alertable signal) rather than just a gap.
+			ch <- prometheus.MustNewConstMetric(c.bucketSuccess, prometheus.GaugeValue, 0, bucketName)
+			return
 		}
 
 		for _, obj := range page.Contents {
@@ -128,6 +148,7 @@ func (c *S3Collector) collectBucket(ctx context.Context, ch chan<- prometheus.Me
 	}
 
 	// 3. Publish metrics for this bucket
+	ch <- prometheus.MustNewConstMetric(c.bucketSuccess, prometheus.GaugeValue, 1, bucketName)
 	ch <- prometheus.MustNewConstMetric(c.objectCount, prometheus.GaugeValue, count, bucketName)
 	ch <- prometheus.MustNewConstMetric(c.totalSize, prometheus.GaugeValue, sizeBytes, bucketName)
 
