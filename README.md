@@ -56,6 +56,7 @@ The exporter is configured via environment variables. There are no default fallb
 | AWS_S3_ENDPOINT_URL       | ✅ Yes   | -       | Full URL to your S3 cluster (e.g., <http://s3.internal:9000>).
 | METRICS_PORT              | ❌ No    | 9300    | The port the HTTP server binds to.
 | METRICS_PATH              | ❌ No    | /s3-metrics | HTTP path the metrics handler is registered on.
+| METRICS_ADDRESS           | ❌ No    | 127.0.0.1 | The address the HTTP server binds to.
 
 ## 🚀 Usage
 
