@@ -6,6 +6,10 @@
   "schemaVersion": 36,
   "panels": [
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "type": "stat",
       "title": "Total Cluster Size",
       "gridPos": { "h": 5, "w": 12, "x": 0, "y": 0 },
@@ -30,6 +34,10 @@
       }
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "type": "stat",
       "title": "Total Objects",
       "gridPos": { "h": 5, "w": 12, "x": 12, "y": 0 },
@@ -54,6 +62,10 @@
       }
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
       "type": "table",
       "title": "Bucket Details & Limits Overview",
       "description": "Highlights buckets that exceed 100GB or haven't been modified in 3 days.",
