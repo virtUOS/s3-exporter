@@ -44,6 +44,15 @@ s3_bucket_size_bytes{bucket="mybucket-1"} 154236
 s3_bucket_size_bytes{bucket="mybucket-2"} 234562143
 s3_bucket_size_bytes{bucket="mybucket-3"} 65204
 s3_bucket_size_bytes{bucket="mybucket-4"} 0
+# HELP s3_bucket_scrape_success Whether the most recent scrape fully enumerated this bucket (1) or failed (0)
+# TYPE s3_bucket_scrape_success gauge
+s3_bucket_scrape_success{bucket="mybucket-1"} 1
+s3_bucket_scrape_success{bucket="mybucket-2"} 1
+s3_bucket_scrape_success{bucket="mybucket-3"} 1
+s3_bucket_scrape_success{bucket="mybucket-4"} 1
+# HELP s3_exporter_scrape_success Whether the most recent scrape successfully listed buckets (1) or failed (0)
+# TYPE s3_exporter_scrape_success gauge
+s3_exporter_scrape_success 1
 ```
 
 ## ⚙️ Configuration
@@ -99,7 +108,7 @@ services:
 
 ### Running Locally (Development)
 
-Ensure you have Go 1.21+ installed, then run:
+Ensure you have Go 1.25+ installed, then run:
 
 ```bash
 export AWS_S3_ACCESS_KEY_ID="your-access-key"
@@ -134,7 +143,7 @@ scrape_configs:
 Below you find two examples for alerting rules for the following scenarios:
 
 1. You might use S3 to save backups. In that case you can see from the last modified date of a bucket, when the last backup took place.
-2. We can not easily retrieve the quotas from the S# environment, but if you know them, you can alert if the bucket grows too big.
+2. We can not easily retrieve the quotas from the S3 environment, but if you know them, you can alert if the bucket grows too big.
 
 ```yaml
 groups:
@@ -171,14 +180,37 @@ groups:
           description: >
             The S3 bucket '{{ $labels.bucket }}' has exceeded the 100 GB threshold.
             Current size is {{ $value | humanize1024 }}.
+
+      # ==========================================
+      # Alert: The exporter could not scrape S3
+      # fires both when listing buckets fails and
+      # when an individual bucket fails to enumerate
+      # ==========================================
+      - alert: S3ScrapeFailed
+        expr: s3_exporter_scrape_success == 0 or s3_bucket_scrape_success == 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "S3 exporter scrape failing"
+          description: >
+            The exporter failed to collect metrics from S3. Either listing
+            buckets failed (s3_exporter_scrape_success), or a specific bucket
+            could not be fully enumerated (s3_bucket_scrape_success), in which
+            case that bucket's other metrics are omitted until it recovers.
 ```
 
 ## ⚠️ Performance Note: Large Buckets
 
-This exporter performs a synchronous scrape. Every time Prometheus queries the `/s3-metrics` endpoint, the exporter iterates through your S3 buckets in real-time. This works best in smaller buckets:
+This exporter performs a synchronous scrape. Every time Prometheus queries the `/s3-metrics` endpoint, the exporter enumerates your S3 buckets in real-time (up to 8 buckets concurrently). This works best in smaller buckets:
 
 - Small to Medium Buckets: This happens in milliseconds and works perfectly.
-- Massive Buckets: The AWS SDK will need to paginate extensively (1,000 objects per page). This will take time and cause high API load on your S3 cluster. If you have extremely large buckets, you may need to increase your Prometheus scrape_timeout.
+- Massive Buckets: The AWS SDK will need to paginate extensively (1,000 objects per page). This takes time and causes high API load on your S3 cluster.
+
+A few built-in safeguards bound this load:
+
+- **Scrape timeout:** each scrape is capped at an internal hard limit of 30 seconds. If enumeration exceeds it, the scrape is aborted; the affected buckets report `s3_bucket_scrape_success=0` and their other metrics are omitted for that scrape. This limit is a compile-time constant, so raising Prometheus' `scrape_timeout` beyond 30s has no effect — for extremely large buckets, scrape less frequently instead.
+- **No overlapping scrapes:** only one scrape runs at a time. Concurrent requests to the endpoint receive HTTP 503 rather than triggering another full enumeration, so a slow scrape cannot multiply the load on your S3 cluster.
 
 ## 📝 License
 
