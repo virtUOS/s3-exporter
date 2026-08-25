@@ -126,6 +126,10 @@ Verify it works by curling the endpoint:
 curl http://localhost:9300/s3-metrics
 ```
 
+### ☸️ Kubernetes
+
+There is a third party helm chart available for this exporter: https://artifacthub.io/packages/helm/ict-platform/s3-exporter
+
 ## 🔗 Prometheus Scrape Configuration
 
 Add the following scrape job to your `prometheus.yml`:
