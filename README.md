@@ -108,7 +108,7 @@ services:
 
 ### Running Locally (Development)
 
-Ensure you have Go 1.25+ installed, then run:
+Ensure you have Go 1.27+ installed, then run:
 
 ```bash
 export AWS_S3_ACCESS_KEY_ID="your-access-key"
